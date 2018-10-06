@@ -38,7 +38,8 @@ char	*human_time(struct stat *st)
 #else
 	s = ctime(&st->st_mtim.tv_sec);
 #endif
-	s[16] = 0;
+	s += 4;
+	s[12] = 0;
 	return (s);
 }
 
@@ -148,10 +149,8 @@ void display_file_detailed(t_file *file, const t_file_lengths *lens)
 {
 	struct stat	*st;
 	char 		link_buf[1024];
-	char 		*h_time;
 
 	st = file->stat;
-	h_time = human_time(st);
 	print_permissions(st->st_mode);
 	printf(" %*u ", lens->links, st->st_nlink);
 	printf("%-*s  ", lens->uname, file->cache->uname);
@@ -161,21 +160,19 @@ void display_file_detailed(t_file *file, const t_file_lengths *lens)
 	else
 		printf(" %*u, %*u ", lens->major, major(st->st_rdev),
 			   lens->minor, minor(st->st_rdev));
-	printf("%s %s%s" RESET, h_time + 4, get_file_color(file), file->name);
+	printf("%s %s%s" RESET, human_time(st), get_file_color(file), file->name);
 	if (S_ISLNK(st->st_mode))
 		printf(" -> %s", read_link(file, link_buf, 1024));
 	printf("\n");
-	free(h_time);
 }
 #else
 void display_file_detailed(t_file *file, const t_file_lengths *lens)
 {
 	struct stat	*st;
 	char 		link_buf[1024];
-	char 		*h_time;
 
 	st = file->stat;
-	h_time = human_time(st);
+	h_time = ;
 	print_permissions(st->st_mode);
 	printf(" %*lu ", lens->links, st->st_nlink);
 	printf("%-*s  ", lens->uname, file->cache->uname);
@@ -185,11 +182,10 @@ void display_file_detailed(t_file *file, const t_file_lengths *lens)
 	else
 		printf(" %*lu, %*lu ", lens->major, MAJOR(st->st_rdev),
 			lens->minor, MINOR(st->st_rdev));
-	printf("%s %s%s" RESET, h_time + 4, get_file_color(file), file->name);
+	printf("%s %s%s" RESET, human_time(st), get_file_color(file), file->name);
 	if (S_ISLNK(st->st_mode))
 		printf(" -> %s", read_link(file, link_buf, 1024));
 	printf("\n");
-	free(h_time);
 }
 #endif
 
