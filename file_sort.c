@@ -16,9 +16,13 @@ char	compare_time(t_file *better, t_file *other)
 {
 	time_t a;
 	time_t b;
-
+#ifdef __APPLE__
+	a = better->stat->st_mtimespec.tv_sec;
+	b = other->stat->st_mtimespec.tv_sec;
+#else
 	a = better->stat->st_mtim.tv_sec;
 	b = other->stat->st_mtim.tv_sec;
+#endif
 	if (a > b)
 		return (1);
 	else if (a == b)

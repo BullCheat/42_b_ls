@@ -21,6 +21,10 @@
 # include <unistd.h>
 # include "file_sort.h"
 
+#ifdef __linux__
+#include <linux/kdev_t.h>
+#endif
+
 char	get_file_type(mode_t mode);
 char	get_oth_type(mode_t mode, char i);
 char	*read_link(const t_file *file, char *buffer, size_t buf_size);

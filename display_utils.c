@@ -10,7 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <linux/kdev_t.h>
 #include "display_utils.h"
 #include "ft_itoa.h"
 
@@ -118,8 +117,13 @@ void 	compute_lengths(const t_list *files, t_file_lengths *lens)
 		}
 		else
 		{
+#ifdef __APPLE__
+			U(major, ft_numlen(major(f->stat->st_rdev)));
+			tmp = minor(f->stat->st_rdev);
+#else
 			U(major, ft_numlen(MAJOR(f->stat->st_rdev)));
 			tmp = MINOR(f->stat->st_rdev);
+#endif
 			if (tmp < 256)
 				U(minor, ft_numlen(tmp));
 		}

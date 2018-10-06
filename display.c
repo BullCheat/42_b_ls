@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "display.h"
-#include "linux/kdev_t.h"
 
 #define PERM(flag, c) printf("%c", mode & flag ? c : '-')
 
@@ -34,7 +33,11 @@ char	*human_time(struct stat *st)
 {
 	char *s;
 
+#ifdef __APPLE__
+	s = ctime(&st->st_mtimespec.tv_sec);
+#else
 	s = ctime(&st->st_mtim.tv_sec);
+#endif
 	s[16] = 0;
 	return (s);
 }
@@ -140,7 +143,31 @@ void	display_columns(t_list *files, int width)
 	}
 	free_lists(lists, (size_t) cols, 1);
 }
+#ifdef __APPLE__
+void display_file_detailed(t_file *file, const t_file_lengths *lens)
+{
+	struct stat	*st;
+	char 		link_buf[1024];
+	char 		*h_time;
 
+	st = file->stat;
+	h_time = human_time(st);
+	print_permissions(st->st_mode);
+	printf(" %*u ", lens->links, st->st_nlink);
+	printf("%-*s  ", lens->uname, file->cache->uname);
+	printf("%-*s  ", lens->gname, file->cache->gname);
+	if (!S_ISBLK(st->st_mode) && !S_ISCHR(st->st_mode))
+		printf("%*llu ", lens->size, st->st_size);
+	else
+		printf(" %*u, %*u ", lens->major, major(st->st_rdev),
+			   lens->minor, minor(st->st_rdev));
+	printf("%s %s%s" RESET, h_time + 4, get_file_color(file), file->name);
+	if (S_ISLNK(st->st_mode))
+		printf(" -> %s", read_link(file, link_buf, 1024));
+	printf("\n");
+	free(h_time);
+}
+#else
 void display_file_detailed(t_file *file, const t_file_lengths *lens)
 {
 	struct stat	*st;
@@ -164,6 +191,7 @@ void display_file_detailed(t_file *file, const t_file_lengths *lens)
 	printf("\n");
 	free(h_time);
 }
+#endif
 
 void	display_list(t_list *files)
 {
@@ -172,7 +200,7 @@ void	display_list(t_list *files)
 	fill_cache(files);
 	compute_lengths(files, &lens);
 	if (!files->data->from_file_arg)
-		printf("total %lu\n", count_blocks(files));
+		printf("total %llu\n", count_blocks(files));
 	while (files && files->data)
 	{
 		display_file_detailed(files->data, &lens);
