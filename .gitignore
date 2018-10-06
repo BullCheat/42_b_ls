@@ -1,0 +1,9 @@
+.idea/
+CMakeLists.txt
+b_ls
+b_ls.dSYM/
+cmake-build-debug/
+test/
+*.out
+*.o
+*.a
