@@ -68,6 +68,7 @@ int		main(int argc, char **argv)
 		w.ws_col = 80;
 	i = 1;
 	ignore = 0;
+	called = 0;
 	while (i < argc)
 	{
 		if (ignore || argv[i][0] != '-')
@@ -81,4 +82,5 @@ int		main(int argc, char **argv)
 	}
 	if (!called)
 		b_ls(".", flags, w.ws_col);
+	free(flags);
 }

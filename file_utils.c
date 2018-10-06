@@ -21,13 +21,16 @@ t_file		*get_data(char *dir, char *file, char is_file)
 {
 	t_file	*f;
 	int		res;
+	char 	*str;
 
 	f = malloc(sizeof(t_file));
 	f->name = file;
 	f->dir = dir;
 	f->from_file_arg = is_file;
 	f->stat = malloc(sizeof(struct stat));
-	res = lstat(ft_concat(dir, file), f->stat);
+	f->cache = 0;
+	res = lstat(str = ft_concat(dir, file), f->stat);
+	free(str);
 	if (res)
 		printf("%s = %d -> %s\n", file, res, strerror(errno));
 	return (f);

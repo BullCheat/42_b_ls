@@ -22,4 +22,5 @@ void	b_ls(char *folder, t_flags *flags, int width)
 		display_list(files);
 	else
 		display_columns(files, width);
+	free_list(files, 1);
 }

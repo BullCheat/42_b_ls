@@ -13,12 +13,12 @@
 #ifndef DISPLAY_UTILS_H
 # define DISPLAY_UTILS_H
 
-# include <ntsid.h>
+# include <sys/types.h>
 # include <sys/stat.h>
 # include <pwd.h>
 # include <grp.h>
 # include <stdio.h>
-# include <zconf.h>
+# include <unistd.h>
 # include "file_sort.h"
 
 char	get_file_type(mode_t mode);

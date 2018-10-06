@@ -13,7 +13,7 @@
 #ifndef STRING_UTILS_H
 # define STRING_UTILS_H
 
-# include <ntsid.h>
+# include <sys/stat.h>
 # include <stdlib.h>
 
 size_t	ft_strlen(const char *str);

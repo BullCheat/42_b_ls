@@ -14,11 +14,11 @@
 
 char	compare_time(t_file *better, t_file *other)
 {
-	__darwin_time_t a;
-	__darwin_time_t b;
+	time_t a;
+	time_t b;
 
-	a = better->stat->st_mtimespec.tv_sec;
-	b = other->stat->st_mtimespec.tv_sec;
+	a = better->stat->st_mtim.tv_sec;
+	b = other->stat->st_mtim.tv_sec;
 	if (a > b)
 		return (1);
 	else if (a == b)
@@ -82,5 +82,6 @@ void	sort_files(t_list **list, char reverse, char time)
 		list_remove(list, best);
 		list_push(sorted, best);
 	}
+	free(*list);
 	*list = sorted;
 }

@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <linux/kdev_t.h>
 #include "display_utils.h"
 #include "ft_itoa.h"
 
@@ -59,8 +60,11 @@ char	get_file_type(mode_t mode)
 char	*read_link(const t_file *file, char *buffer, size_t buf_size)
 {
 	ssize_t len;
+	char 	*str;
 
-	len = readlink(ft_concat(file->dir, file->name), buffer, buf_size - 1);
+	str = ft_concat(file->dir, file->name);
+	len = readlink(str, buffer, buf_size - 1);
+	free(str);
 	if (len == -1)
 		return ("<ERROR>");
 	buffer[len] = 0;
@@ -114,8 +118,8 @@ void 	compute_lengths(const t_list *files, t_file_lengths *lens)
 		}
 		else
 		{
-			U(major, ft_numlen(major(f->stat->st_rdev)));
-			tmp = minor(f->stat->st_rdev);
+			U(major, ft_numlen(MAJOR(f->stat->st_rdev)));
+			tmp = MINOR(f->stat->st_rdev);
 			if (tmp < 256)
 				U(minor, ft_numlen(tmp));
 		}

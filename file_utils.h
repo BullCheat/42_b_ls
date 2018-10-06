@@ -13,7 +13,6 @@
 #ifndef FILE_UTILS_H
 # define FILE_UTILS_H
 
-# include <zconf.h>
 # include <stdio.h>
 # include <dirent.h>
 # include <errno.h>

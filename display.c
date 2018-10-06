@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "display.h"
+#include "linux/kdev_t.h"
 
 #define PERM(flag, c) printf("%c", mode & flag ? c : '-')
 
@@ -33,7 +34,7 @@ char	*human_time(struct stat *st)
 {
 	char *s;
 
-	s = ctime(&st->st_mtimespec.tv_sec);
+	s = ctime(&st->st_mtim.tv_sec);
 	s[16] = 0;
 	return (s);
 }
@@ -53,7 +54,7 @@ t_list **split_list(t_list *files, int width, int *biggest, int *cols) {
 	for (int i = 0; i < *cols; i++) {
 		ret[i] = files;
 		if (i != *cols - 1)
-			for (int j = 0; j < rows; j++)
+			for (int j = 0; j < rows && files; j++)
 			{
 				tmp = files;
 				files = files->next;
@@ -82,25 +83,37 @@ char *get_file_color(t_file *file)
 	return (RESET);
 }
 
-void 	free_list(t_list *list)
-{
+void free_list(t_list *list, char elements) {
 	t_list *tmp;
 
 	while ((tmp = list))
 	{
 		list = tmp->next;
+		if (elements && tmp->data)
+		{
+			free(tmp->data->name);
+			if (tmp->data->cache)
+			{
+				free(tmp->data->cache->gname);
+				free(tmp->data->cache->uname);
+				free(tmp->data->cache);
+			}
+			if (tmp->data->stat)
+				free(tmp->data->stat);
+			free(tmp->data);
+		}
 		free(tmp);
 	}
 }
 
-void free_lists(t_list **lists, size_t n)
+void free_lists(t_list **lists, size_t n, char elements)
 {
 	size_t i;
 
 	i = 0;
 	while (i < n)
 	{
-		free(lists[i]);
+		free_list(lists[i], elements);
 		i++;
 	}
 	free(lists);
@@ -111,18 +124,21 @@ void	display_columns(t_list *files, int width)
 	int	biggest;
 	int cols;
 	t_list **lists;
+	int printed;
 
 	lists = split_list(files, width, &biggest, &cols);
 	while (*lists != NULL) {
 		for (int i = 0; i < cols && lists[i]; i++) {
 			printf("%s", get_file_color(lists[i]->data));
-			printf("%-*s", i != cols - 1 ? biggest : 0, lists[i]->data->name);
+			printed = printf("%s", lists[i]->data->name);
 			printf(RESET);
+			if (i != cols - 1)
+				printf("%*s", biggest - printed, "");
 			lists[i] = lists[i]->next;
 		}
 		printf("\n");
 	}
-	free_lists(lists, (size_t) cols);
+	free_lists(lists, (size_t) cols, 1);
 }
 
 void display_file_detailed(t_file *file, const t_file_lengths *lens)
@@ -134,14 +150,14 @@ void display_file_detailed(t_file *file, const t_file_lengths *lens)
 	st = file->stat;
 	h_time = human_time(st);
 	print_permissions(st->st_mode);
-	printf(" %*d ", lens->links, st->st_nlink);
+	printf(" %*lu ", lens->links, st->st_nlink);
 	printf("%-*s  ", lens->uname, file->cache->uname);
 	printf("%-*s  ", lens->gname, file->cache->gname);
 	if (!S_ISBLK(st->st_mode) && !S_ISCHR(st->st_mode))
-		printf("%*llu ", lens->size, st->st_size);
+		printf("%*lu ", lens->size, st->st_size);
 	else
-		printf(" %*d, %*d ", lens->major, major(st->st_rdev),
-			lens->minor, minor(st->st_rdev));
+		printf(" %*lu, %*lu ", lens->major, MAJOR(st->st_rdev),
+			lens->minor, MINOR(st->st_rdev));
 	printf("%s %s%s" RESET, h_time + 4, get_file_color(file), file->name);
 	if (S_ISLNK(st->st_mode))
 		printf(" -> %s", read_link(file, link_buf, 1024));
@@ -156,11 +172,11 @@ void	display_list(t_list *files)
 	fill_cache(files);
 	compute_lengths(files, &lens);
 	if (!files->data->from_file_arg)
-		printf("total %llu\n", count_blocks(files));
+		printf("total %lu\n", count_blocks(files));
 	while (files && files->data)
 	{
 		display_file_detailed(files->data, &lens);
 		files = files->next;
 	}
-	free_list(files);
+	free_list(files, 1);
 }

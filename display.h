@@ -13,7 +13,7 @@
 #ifndef DISPLAY_H
 # define DISPLAY_H
 
-# include <ntsid.h>
+# include <sys/types.h>
 # include <stdio.h>
 # include <time.h>
 # include <sys/stat.h>
@@ -45,5 +45,6 @@ void	print_permissions(mode_t mode);
 char	*human_time(struct stat *st);
 void	display_columns(t_list *files, int width);
 void	display_list(t_list *files);
+void free_list(t_list *list, char elements);
 
 #endif
