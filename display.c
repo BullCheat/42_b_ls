@@ -172,7 +172,6 @@ void display_file_detailed(t_file *file, const t_file_lengths *lens)
 	char 		link_buf[1024];
 
 	st = file->stat;
-	h_time = ;
 	print_permissions(st->st_mode);
 	printf(" %*lu ", lens->links, st->st_nlink);
 	printf("%-*s  ", lens->uname, file->cache->uname);
@@ -196,7 +195,11 @@ void	display_list(t_list *files)
 	fill_cache(files);
 	compute_lengths(files, &lens);
 	if (!files->data->from_file_arg)
+#ifdef __APPLE__
 		printf("total %llu\n", count_blocks(files));
+#else
+		printf("total %lu\n", count_blocks(files));
+#endif
 	while (files && files->data)
 	{
 		display_file_detailed(files->data, &lens);
